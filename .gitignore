@@ -1,0 +1,34 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Cowork / scratch
+.scratch/
+*.tmp
+
+# Large binaries that belong in Drive, not here
+*.mp4
+*.mov
+*.mp3
+*.wav
+*.zip
