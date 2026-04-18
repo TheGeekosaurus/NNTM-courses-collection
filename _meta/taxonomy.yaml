@@ -1,0 +1,30 @@
+# Controlled vocabulary of topics per NNTM (business unit).
+#
+# Any lesson's frontmatter `topic` field must match a `name` from this file
+# exactly, including capitalization. Add new topics here before using them
+# in lessons — this keeps the synthesis agent from drifting on naming
+# ("local seo tips" vs "Local SEO" vs "GMB stuff").
+#
+# Status values:
+#   - active     : currently being synthesized / maintained
+#   - planned    : on the roadmap, no lessons yet
+#   - archived   : deprecated, don't add new lessons here
+
+labs:
+  description: Marketing and growth
+  topics:
+    - name: Local SEO
+      slug: local-seo
+      status: active
+      description: >
+        Google Business Profile optimization, map pack visibility,
+        local citations, review generation, location-based organic
+        ranking, geo-targeted content.
+
+capital:
+  description: Funding and business credit
+  topics: []
+
+ventures:
+  description: Business acquisition
+  topics: []
