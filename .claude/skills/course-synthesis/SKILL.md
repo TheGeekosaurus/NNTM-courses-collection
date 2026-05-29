@@ -11,6 +11,43 @@ This skill drives the synthesis half of the Redo Courses pipeline. N8N already h
 
 Denis takes many third-party courses on the same topic. Instead of re-watching five Local SEO courses every time he wants to refresh his curriculum, he's building one "ultimate" course per topic that combines the best teaching from all sources. Chunks in Supabase serve his AI agents; the prose in the GitHub repo serves his course-creation software. This skill is what turns a pile of source transcripts into a single coherent teaching artifact — and keeps that artifact evolving as new source courses arrive.
 
+## The canonical spine
+
+Each ultimate course has **one stable module spine** — its own canonical organization, owned by the ultimate course, not inherited from any source. When you fold in a source course, you map its chapters *into* that spine, many-to-one: three different source courses' "keyword research" chapters all route to the same canonical module. A source course's own table of contents is never adopted as the ultimate course's structure — it's an input to be re-sorted, not a skeleton to copy.
+
+The spine is **evolutionary, not pre-planned.** Add a module the day a lesson actually needs it; never pre-build empty modules in anticipation. The roadmap of modules you expect to need lives in the README's planned outline (below), clearly marked as planned — but the live spine only contains modules that hold real lessons.
+
+## Repo layout conventions
+
+Lessons live in **numbered module folders** under the topic directory, one markdown file per lesson:
+
+```
+labs/local-seo/02-site-structure/lesson-name.md
+labs/local-seo/05-citations-and-nap/lesson-name.md
+```
+
+- The **numeric prefix sets module order** in GitHub's file listing. Leave gaps (`00`, `02`, `05`, …) so a planned module can slot in later without renumbering everything after it.
+- A lesson's frontmatter `module` value **must match its folder** (the human-readable module name corresponding to that numbered folder). Folder and frontmatter are two views of the same spine; keep them in sync.
+
+## The README is the living spine
+
+Each ultimate course's `README.md` is the **source of truth for the spine** — not a generated artifact, a maintained one. Every synthesis PR appends to it. It carries:
+
+- Frontmatter `modules` and `source_courses` arrays, kept populated (no longer left empty once synthesis begins).
+- A **Modules** section: each canonical module mapped to the lessons it currently contains.
+- A **Source courses integrated** log: one line per processed source course with its name, the count of lessons folded in, and its Airtable `Original Courses` record ID (`recXXXXXXXXXXXXX`).
+- A **Planned module outline**: the roadmap of modules expected but not yet built, clearly marked as planned so it's never mistaken for the live spine.
+
+## The mapping file — merge audit trail
+
+Each ultimate course also has a `_mapping.md`. For every source course processed, add a table that records how its original structure routed into the canonical spine:
+
+| Original chapter | Canonical module | Outcome | Resulting lesson path |
+| --- | --- | --- | --- |
+| (source course's chapter name) | (spine module it mapped to) | skip / replace / enrich / create | `labs/local-seo/02-site-structure/lesson-name.md` |
+
+This is the per-source audit trail of every many-to-one mapping decision — it answers "where did this source course's chapter X end up, and why" at a glance.
+
 ## The four-outcome decision framework
 
 Every new source lesson maps to exactly one of:
@@ -32,7 +69,7 @@ When in doubt between skip and enrich, prefer enrich — dropping useful nuance 
 
 ### Step 2 — For each source lesson in scope
 
-- Read the full transcript from Drive (or from the Airtable `Lessons` table `Lesson transcript` field, which is the same text).
+- Read the full transcript. In Airtable it lives across linked tables: `Original Courses` → `Modules` → `Lesson Files`, and the transcript text sits on the **`Lesson Files`** record (there is no flat "Lessons" table). The same text is also available from Drive.
 - Query Supabase (via the agent server, or directly if access is granted) for semantically similar chunks already in the knowledge base. High similarity = concept already covered; low similarity = probably new.
 - If similar chunks point to one or more existing ultimate lessons, read those lessons' full bodies too. Compare in full prose — similarity scores narrow the search, they don't make the decision.
 - Classify the outcome using the framework above. Write a one-paragraph rationale. This rationale goes into the PR body.
@@ -45,7 +82,9 @@ For **skip** outcomes: no file change, but still open a PR (title: `Skip: <sourc
 
 For **replace / enrich / create**: edit or create the lesson file(s). Follow the frontmatter schema in `_meta/frontmatter-schema.md`. Body stays clean — no inline citations, no appendix. Bump `last_updated` to today. Append to (don't overwrite) the `sources` array with the new contribution.
 
-Update `labs/<topic>/README.md` (or equivalent) if the module structure changed.
+Place the lesson in the correct numbered module folder (create the folder if the module is new) and make sure its frontmatter `module` matches that folder.
+
+Update the course `README.md` on **every** PR: refresh the `modules`/`source_courses` frontmatter, the Modules section, the Source courses integrated log, and (if the roadmap shifted) the Planned module outline. Append a row per source chapter to the course's `_mapping.md`.
 
 ### Step 4 — Open the PR
 
@@ -64,12 +103,14 @@ Report back to Denis with the PR URL and a one-paragraph summary of what you pro
 - **Attribution is cheap; dilution is expensive.** Err on the side of adding every source that meaningfully contributed to the `sources` array. But don't add sources that didn't actually change the body — that's noise.
 - **Don't batch decisions across topics.** One PR per target topic, usually. A PR that touches `labs/local-seo/` and `capital/business-credit/` is harder to review and risks one bad call tainting the other.
 - **When unsure, draft the change and let Denis reject it.** A PR that gets closed unmerged is cheap; a missed angle that never makes it into the course is forever.
+- **Name stable tools; keep the AI layer generic.** The AI/LLM layer churns fast, so refer to it generically — "a capable model," "a custom GPT" — rather than pinning a brand that will be stale in a quarter. But the load-bearing non-AI tools are stable craft worth teaching by name: name the keyword research tools, name Local Falcon for grid-based rank tracking, name the citation services. Specificity helps the student where the tool won't change out from under them.
 
 ## Key references
 
 - **Frontmatter schema**: [`_meta/frontmatter-schema.md`](../../../_meta/frontmatter-schema.md) in this repo.
 - **Topic taxonomy**: [`_meta/taxonomy.yaml`](../../../_meta/taxonomy.yaml). Any `topic` in a lesson frontmatter must match a `name` here. If the topic doesn't exist yet, add it to taxonomy.yaml in the same PR.
 - **Example lesson**: [`_meta/EXAMPLE-lesson.md`](../../../_meta/EXAMPLE-lesson.md).
+- **Living spine**: each course's own `README.md` (frontmatter + Modules + Source courses integrated + Planned outline) and its `_mapping.md` audit trail.
 - **Memory**: `projects/redo-courses.md` in Cowork memory has system IDs, URLs, and project state.
 
 ## Access and credentials
